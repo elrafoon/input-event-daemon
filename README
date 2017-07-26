@@ -4,7 +4,7 @@ input-event-daemon -  input event handling daemon for linux
 Usage:
 
     input-event-daemon [ [ --monitor | --list | --help | --version ] |
-                         [--config=FILE] [--verbose] [--no-daemon] ]
+                         [--config=FILE] [--verbose] [--no-daemon] [--input=PATH] ]
 
     Available Options:
 
@@ -13,6 +13,7 @@ Usage:
         -c, --config FILE   Use specified config file
         -v, --verbose       Verbose output
         -D, --no-daemon     Don't run in background
+		-i, --input PATH  	Add input device to listen to
 
         -h, --help          Show this help and quit
         -V, --version       Show version number and quit

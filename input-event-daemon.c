@@ -297,7 +297,7 @@ static switch_event_t
 }
 
 void input_open_all_listener() {
-    int i, listen_len = 0;
+    int i;
     char filename[32];
 
     for(i=0; i<MAX_LISTENER; i++) {
@@ -309,7 +309,7 @@ void input_open_all_listener() {
             }
             continue;
         }
-        conf.listen[listen_len++] = strdup(filename);
+        conf.listen[conf.listen_len++] = strdup(filename);
     }
 }
 
@@ -393,7 +393,6 @@ void config_parse_file() {
     char *key, *value, *ptr;
     const char *error = NULL;
     int line_num = 0;
-    int listen_len = 0;
 
     if((config_fd = fopen(conf.configfile, "r")) == NULL) {
         fprintf(stderr, PROGRAM": fopen(%s): %s\n",
@@ -440,8 +439,8 @@ void config_parse_file() {
             error = "Invlaid syntax!";
         } else if(strcasecmp(section, "Global") == 0) {
             if(strcmp(key, "listen") == 0) {
-                if(listen_len < MAX_LISTENER) {
-                    conf.listen[listen_len++] = strdup(value);
+                if(conf.listen_len < MAX_LISTENER) {
+                    conf.listen[conf.listen_len++] = strdup(value);
                 } else {
                     error = "Listener limit exceeded!";
                 }
@@ -823,7 +822,7 @@ static void daemon_print_help() {
             "    "PROGRAM" "
             "[ [ --monitor | --list | --help | --version ] |\n"
             "                         "
-            "[--config=FILE] [--verbose] [--no-daemon] ]\n"
+            "[--config=FILE] [--verbose] [--no-daemon] [--input=PATH] ]\n"
             "\n"
             "Available Options:\n"
             "\n"
@@ -832,6 +831,7 @@ static void daemon_print_help() {
             "    -c, --config FILE   Use specified config file\n"
             "    -v, --verbose       Verbose output\n"
             "    -D, --no-daemon     Don't run in background\n"
+            "    -i, --input=PATH    Add input device\n"
             "\n"
             "    -h, --help          Show this help and quit\n"
             "    -V, --version       Show version number and quit\n"
@@ -853,6 +853,7 @@ int main(int argc, char *argv[]) {
         { "config",    required_argument, 0, 'c' },
         { "verbose",   no_argument,       0, 'v' },
         { "no-daemon", no_argument,       0, 'D' },
+        { "input",		required_argument,  0, 'i' },
         { "help",      no_argument,       0, 'h' },
         { "version",   no_argument,       0, 'V' },
         {NULL,         0,              NULL,  0  }
@@ -865,7 +866,7 @@ int main(int argc, char *argv[]) {
     signal(SIGINT,  daemon_clean);
 
     while (optind < argc) {
-        result = getopt_long(argc, argv, "mlc:vDhV", long_options, NULL);
+        result = getopt_long(argc, argv, "mlc:vDi:hV", long_options, NULL);
         arguments++;
 
         switch(result) {
@@ -902,6 +903,14 @@ int main(int argc, char *argv[]) {
             case 'V': /* version */
                 daemon_print_version();
                 break;
+			case 'i': /* add input */
+                if(conf.listen_len < MAX_LISTENER)
+	                conf.listen[conf.listen_len++] = strdup(optarg);
+				else {
+					fprintf(stderr, PROGRAM": Listener limit reached!\n");
+					return EXIT_FAILURE;
+				}
+				break;
             default: /* unknown */
                 break;
         }

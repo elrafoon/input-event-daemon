@@ -26,6 +26,7 @@ struct {
 
     unsigned long   min_timeout;
 
+	unsigned		listen_len;
     const char      *listen[MAX_LISTENER];
     int             listen_fd[MAX_LISTENER];
 
